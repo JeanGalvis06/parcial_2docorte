@@ -45,4 +45,7 @@ public class UserModel {
     return new UserModel(id, name, email, password, role, UserStatus.INACTIVE);
   }
 
+  public boolean isActive() {
+    return UserStatus.ACTIVE.equals(status);
+  }
 }
