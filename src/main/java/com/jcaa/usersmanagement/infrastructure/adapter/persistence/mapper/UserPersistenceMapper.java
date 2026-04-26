@@ -14,15 +14,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.experimental.UtilityClass;
 
-// VIOLACIÓN Regla 4: clase con solo métodos de conversión que NO está anotada con @UtilityClass.
-// Sin @UtilityClass, Lombok no genera constructor privado y la clase puede instanciarse.
-// Además los métodos deberían ser static al no usar estado de instancia.
-// Clean Code - Regla 13 (evitar clases utilitarias innecesarias):
-// Esta clase existe porque NO se usa MapStruct (regla 7 de Reglas 1.md: usar MapStruct como
-// única librería de mapeo). Al escribir mappers manualmente se crea una clase "utilitaria"
-// cuya lógica debería estar generada automáticamente, no dispersa en código manual.
-// Una clase UserPersistenceMapper escrita a mano es señal de lógica mal ubicada.
+@UtilityClass
 public class UserPersistenceMapper {
 
   public UserPersistenceDto fromModelToDto(final UserModel user) {
