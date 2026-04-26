@@ -1,8 +1,11 @@
 package com.jcaa.usersmanagement.application.service;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import com.jcaa.usersmanagement.application.port.out.GetUserByEmailPort;
 import com.jcaa.usersmanagement.application.service.dto.command.LoginCommand;
@@ -29,12 +32,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class LoginServiceTest {
 
+  private static final String EMAIL = "john@example.com";
+  private static final String PASSWORD = "SecurePass1";
+  private static final String USER_ID = "u-001";
+  private static final String USER_NAME = "John Arrieta";
+
   @Mock private GetUserByEmailPort getUserByEmailPort;
 
   private LoginService service;
-
-  private static final String EMAIL = "john@example.com";
-  private static final String PASSWORD = "SecurePass1";
 
   @BeforeEach
   void setUp() {
@@ -46,54 +51,42 @@ class LoginServiceTest {
   @Test
   @DisplayName("execute() retorna el usuario cuando las credenciales son correctas y está activo")
   void shouldReturnUserWhenCredentialsAreValidAndUserIsActive() {
-    // VIOLACIÓN Regla 11: se eliminaron los comentarios de estructura Arrange–Act–Assert.
-    // La regla exige que cada bloque esté documentado con // Arrange, // Act, // Assert.
+    // Arrange
     final LoginCommand command = new LoginCommand(EMAIL, PASSWORD);
-    final UserModel activeUser =
-        new UserModel(
-            new UserId("u-001"),
-            new UserName("John Arrieta"),
-            new UserEmail(EMAIL),
-            UserPassword.fromPlainText(PASSWORD),
-            UserRole.ADMIN,
-            UserStatus.ACTIVE);
+    final UserModel activeUser = buildUser(UserStatus.ACTIVE, UserRole.ADMIN, PASSWORD);
+
     when(getUserByEmailPort.getByEmail(any())).thenReturn(Optional.of(activeUser));
+
+    // Act
     final UserModel result = service.execute(command);
-    // VIOLACIÓN Regla 11: se usa assertTrue(result != null) en lugar de assertNotNull(result).
-    // La regla indica usar las aserciones correctas — assertNotNull es más expresivo.
-    assertTrue(result != null);
-    // VIOLACIÓN Regla 11: se usa assertTrue(result == activeUser) en lugar de assertSame(...).
-    assertTrue(result == activeUser);
+
+    // Assert
+    assertNotNull(result);
+    assertSame(activeUser, result);
   }
 
-  // ── email no registrado
-
-  // VIOLACIÓN Regla 11: falta @DisplayName — los tests deben documentar su comportamiento.
   @Test
+  @DisplayName("execute() lanza InvalidCredentialsException cuando el email no existe")
   void shouldThrowWhenEmailNotFound() {
+    // Arrange
     final LoginCommand command = new LoginCommand(EMAIL, PASSWORD);
 
     when(getUserByEmailPort.getByEmail(any())).thenReturn(Optional.empty());
 
+    // Act & Assert
     assertThrows(InvalidCredentialsException.class, () -> service.execute(command));
   }
 
-  // VIOLACIÓN Regla 11: falta @DisplayName en el método.
   @Test
+  @DisplayName("execute() lanza InvalidCredentialsException cuando la contraseña es incorrecta")
   void shouldThrowWhenPasswordIsWrong() {
+    // Arrange
     final LoginCommand command = new LoginCommand(EMAIL, "WrongPass99");
-
-    final UserModel user =
-        new UserModel(
-            new UserId("u-001"),
-            new UserName("John Arrieta"),
-            new UserEmail(EMAIL),
-            UserPassword.fromPlainText(PASSWORD),
-            UserRole.MEMBER,
-            UserStatus.ACTIVE);
+    final UserModel user = buildUser(UserStatus.ACTIVE, UserRole.MEMBER, PASSWORD);
 
     when(getUserByEmailPort.getByEmail(any())).thenReturn(Optional.of(user));
 
+    // Act & Assert
     assertThrows(InvalidCredentialsException.class, () -> service.execute(command));
   }
 
@@ -102,15 +95,7 @@ class LoginServiceTest {
   void shouldThrowWhenUserIsNotActive() {
     // Arrange
     final LoginCommand command = new LoginCommand(EMAIL, PASSWORD);
-
-    final UserModel pendingUser =
-        new UserModel(
-            new UserId("u-001"),
-            new UserName("John Arrieta"),
-            new UserEmail(EMAIL),
-            UserPassword.fromPlainText(PASSWORD),
-            UserRole.MEMBER,
-            UserStatus.PENDING);
+    final UserModel pendingUser = buildUser(UserStatus.PENDING, UserRole.MEMBER, PASSWORD);
 
     when(getUserByEmailPort.getByEmail(any())).thenReturn(Optional.of(pendingUser));
 
@@ -127,5 +112,16 @@ class LoginServiceTest {
     // Act & Assert
     assertThrows(ConstraintViolationException.class, () -> service.execute(command));
     verifyNoInteractions(getUserByEmailPort);
+  }
+
+  private static UserModel buildUser(
+      final UserStatus status, final UserRole role, final String plainPassword) {
+    return new UserModel(
+        new UserId(USER_ID),
+        new UserName(USER_NAME),
+        new UserEmail(EMAIL),
+        UserPassword.fromPlainText(plainPassword),
+        role,
+        status);
   }
 }
