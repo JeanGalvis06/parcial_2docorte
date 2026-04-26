@@ -9,7 +9,6 @@ import com.jcaa.usersmanagement.domain.model.UserModel;
 import com.jcaa.usersmanagement.domain.valueobject.UserId;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Valid;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +24,7 @@ public final class GetUserByIdService implements GetUserByIdUseCase {
   // Las constraints (@Valid, @NotNull, etc.) solo deben declararse en las interfaces (puertos),
   // nunca en las clases concretas que las implementan.
   @Override
-  public UserModel execute(@Valid final GetUserByIdQuery query) {
+  public UserModel execute(final GetUserByIdQuery query) {
     validateQuery(query);
 
     final UserId userId = UserApplicationMapper.fromGetUserByIdQueryToUserId(query);
