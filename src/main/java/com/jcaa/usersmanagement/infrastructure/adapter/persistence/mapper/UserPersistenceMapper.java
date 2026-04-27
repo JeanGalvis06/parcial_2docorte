@@ -9,7 +9,6 @@ import com.jcaa.usersmanagement.domain.valueobject.UserName;
 import com.jcaa.usersmanagement.domain.valueobject.UserPassword;
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.dto.UserPersistenceDto;
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.entity.UserEntity;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -20,19 +19,13 @@ import lombok.experimental.UtilityClass;
 public class UserPersistenceMapper {
 
   public UserPersistenceDto fromModelToDto(final UserModel user) {
-    // Clean Code - Regla 14 (Ley de Deméter):
-    // Cada línea encadena dos llamadas: user → getValue object → .value().
-    // Por ejemplo: user.getId().value() navega al interior del value object UserId
-    // para extraer el String. El mapper no debería acceder a los internals del value object;
-    // debería existir un método user.getIdValue() o delegarse al propio objeto.
-    // La Ley de Deméter dice: habla solo con tus amigos directos, no con los amigos de tus amigos.
     return new UserPersistenceDto(
-        user.getId().value(),
-        user.getName().value(),
-        user.getEmail().value(),
-        user.getPassword().value(),
-        user.getRole().name(),
-        user.getStatus().name(),
+        user.idValue(),
+        user.nameValue(),
+        user.emailValue(),
+        user.passwordValue(),
+        user.roleName(),
+        user.statusName(),
         null,
         null);
   }
@@ -65,9 +58,11 @@ public class UserPersistenceMapper {
 
   public List<UserModel> fromResultSetToModelList(final ResultSet resultSet) throws SQLException {
     final List<UserModel> users = new ArrayList<>();
+
     while (resultSet.next()) {
       users.add(fromResultSetToModel(resultSet));
     }
+
     return users;
   }
 }
