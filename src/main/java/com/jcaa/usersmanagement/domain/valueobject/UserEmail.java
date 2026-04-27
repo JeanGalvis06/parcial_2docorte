@@ -10,18 +10,23 @@ public record UserEmail(String value) {
       Pattern.compile("^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}$");
 
   public UserEmail {
-    final String normalizedValue =
-        Objects.requireNonNull(value, "UserEmail cannot be null").trim().toLowerCase();
-    // Clean Code - Regla 23 (minimizar conocimiento disperso):
-    // La lógica de "qué es un email válido" está fragmentada en tres lugares:
-    //   1. Aquí: validación de formato con regex (EMAIL_PATTERN)
-    //   2. UserValidationUtils.isValidEmail(): validación simplificada con contains("@")
-    //   3. Posiblemente en constraints @Email de los commands (CreateUserCommand)
-    // Un cambio en las reglas de validación de email debe buscarse y sincronizarse
-    // en múltiples clases — eso es conocimiento disperso.
+    final String normalizedValue = normalize(value);
     validateNotEmpty(normalizedValue);
     validateFormat(normalizedValue);
     value = normalizedValue;
+  }
+
+  public static boolean isValidFormat(final String email) {
+    if (Objects.isNull(email)) {
+      return false;
+    }
+
+    final String normalizedValue = email.trim().toLowerCase();
+    return !normalizedValue.isEmpty() && EMAIL_PATTERN.matcher(normalizedValue).matches();
+  }
+
+  private static String normalize(final String value) {
+    return Objects.requireNonNull(value, "UserEmail cannot be null").trim().toLowerCase();
   }
 
   private static void validateNotEmpty(final String normalizedValue) {
@@ -31,7 +36,7 @@ public record UserEmail(String value) {
   }
 
   private static void validateFormat(final String normalizedValue) {
-    if (!EMAIL_PATTERN.matcher(normalizedValue).matches()) {
+    if (!isValidFormat(normalizedValue)) {
       throw InvalidUserEmailException.becauseFormatIsInvalid(normalizedValue);
     }
   }
