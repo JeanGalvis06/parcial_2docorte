@@ -60,7 +60,7 @@ public final class EmailNotificationService {
     final String body = renderTemplate(template, tokens);
     final EmailDestinationModel destination = buildDestination(user, subject, body);
 
-    sendOrLog(destination);
+    sendEmailNotification(destination);
   }
 
   private static Map<String, String> buildCreatedUserTokens(
@@ -117,7 +117,7 @@ public final class EmailNotificationService {
     return result;
   }
 
-  private void sendOrLog(final EmailDestinationModel destination) {
+  private void sendEmailNotification(final EmailDestinationModel destination) {
     try {
       emailSenderPort.send(destination);
     } catch (final EmailSenderException senderException) {
