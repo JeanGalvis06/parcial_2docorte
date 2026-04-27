@@ -6,20 +6,14 @@ import com.jcaa.usersmanagement.application.port.in.GetAllUsersUseCase;
 import com.jcaa.usersmanagement.application.port.in.GetUserByIdUseCase;
 import com.jcaa.usersmanagement.application.port.in.LoginUseCase;
 import com.jcaa.usersmanagement.application.port.in.UpdateUserUseCase;
-import com.jcaa.usersmanagement.application.service.dto.command.CreateUserCommand;
-import com.jcaa.usersmanagement.application.service.dto.command.DeleteUserCommand;
-import com.jcaa.usersmanagement.application.service.dto.command.LoginCommand;
-import com.jcaa.usersmanagement.application.service.dto.command.UpdateUserCommand;
-import com.jcaa.usersmanagement.application.service.dto.query.GetUserByIdQuery;
-import com.jcaa.usersmanagement.domain.model.UserModel;
+import com.jcaa.usersmanagement.domain.valueobject.UserId;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.dto.CreateUserRequest;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.dto.LoginRequest;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.dto.UpdateUserRequest;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.dto.UserResponse;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.mapper.UserDesktopMapper;
-import lombok.RequiredArgsConstructor;
-
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public final class UserController {
@@ -32,18 +26,13 @@ public final class UserController {
   private final LoginUseCase loginUseCase;
 
   public List<UserResponse> listAllUsers() {
-    // VIOLACIÓN Regla 4: uso de abreviatura "usrs" — los nombres deben ser claros y sin abreviaturas.
-    final var usrs = getAllUsersUseCase.execute();
-    return UserDesktopMapper.toResponseList(usrs);
+    final var users = getAllUsersUseCase.execute();
+    return UserDesktopMapper.toResponseList(users);
   }
 
   public UserResponse findUserById(final String id) {
-    // Clean Code - Regla 20 (objeto antes que primitivo cuando el concepto lo merezca):
-    // El parámetro "id" es un String desnudo. El dominio tiene un tipo propio UserId
-    // que encapsula la validación (no vacío, no nulo, trimming).
-    // Al recibir String aquí, cualquier String pasa sin validación hasta llegar al value object.
-    // Recibir UserId directamente haría el contrato más expresivo y seguro.
-    final var query = UserDesktopMapper.toGetByIdQuery(id);
+    final UserId userId = new UserId(id);
+    final var query = UserDesktopMapper.toGetByIdQuery(userId.value());
     final var user = getUserByIdUseCase.execute(query);
     return UserDesktopMapper.toResponse(user);
   }
@@ -61,7 +50,8 @@ public final class UserController {
   }
 
   public void deleteUser(final String id) {
-    final var command = UserDesktopMapper.toDeleteCommand(id);
+    final UserId userId = new UserId(id);
+    final var command = UserDesktopMapper.toDeleteCommand(userId.value());
     deleteUserUseCase.execute(command);
   }
 
@@ -70,5 +60,4 @@ public final class UserController {
     final var user = loginUseCase.execute(command);
     return UserDesktopMapper.toResponse(user);
   }
-  
 }

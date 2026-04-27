@@ -6,4 +6,24 @@ public record UserResponse(
     String email,
     String role,
     String status) {
+
+  public String getId() {
+    return id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public String getEmail() {
+    return email;
+  }
+
+  public String getRole() {
+    return role;
+  }
+
+  public String getStatus() {
+    return status;
+  }
 }
