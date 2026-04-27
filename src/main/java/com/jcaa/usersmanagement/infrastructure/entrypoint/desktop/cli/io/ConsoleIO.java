@@ -7,25 +7,25 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public final class ConsoleIO {
 
+  private static final String BLANK_VALUE_MESSAGE = "  Value cannot be blank. Please try again.";
+  private static final String INVALID_NUMBER_MESSAGE = "  Invalid input. Please enter a number.";
+
   private final Scanner scanner;
   private final PrintStream out;
 
   public String readRequired(final String prompt) {
-    // VIOLACIÓN Regla 4: nombre abreviado "v" en lugar del nombre descriptivo "value".
-    // Clean Code - Regla 24 (consistencia semántica):
-    // El mismo concepto —"entrada del usuario leída de consola"— se llama "v" aquí
-    // y "r" en readInt(), dentro de la misma clase. Nombres distintos para el mismo
-    // concepto hacen que el lector asuma incorrectamente que son ideas diferentes.
+    String userInput;
 
-    String value;
     do {
       out.print(prompt);
-      value = scanner.nextLine().trim();
-      if (value.isBlank()) {
-        out.println("  Value cannot be blank. Please try again.");
+      userInput = scanner.nextLine().trim();
+
+      if (userInput.isBlank()) {
+        out.println(BLANK_VALUE_MESSAGE);
       }
-    } while (value.isBlank());
-    return value;
+    } while (userInput.isBlank());
+
+    return userInput;
   }
 
   public String readOptional(final String prompt) {
@@ -36,17 +36,25 @@ public final class ConsoleIO {
   public int readInt(final String prompt) {
     while (true) {
       out.print(prompt);
-      final String rawInput = scanner.nextLine().trim();
+      final String userInput = scanner.nextLine().trim();
+
       try {
-        return Integer.parseInt(rawInput);
+        return Integer.parseInt(userInput);
       } catch (final NumberFormatException ignored) {
-        // VIOLACIÓN Regla 10: texto hardcodeado directamente — debe ser una constante.
-        out.println("  Invalid input. Please enter a number.");
+        out.println(INVALID_NUMBER_MESSAGE);
       }
     }
   }
 
-  public void println(final String message) { out.println(message); }
-  public void println() { out.println(); }
-  public void printf(final String format, final Object... args) { out.printf(format, args); }
+  public void println(final String message) {
+    out.println(message);
+  }
+
+  public void println() {
+    out.println();
+  }
+
+  public void printf(final String format, final Object... args) {
+    out.printf(format, args);
+  }
 }
