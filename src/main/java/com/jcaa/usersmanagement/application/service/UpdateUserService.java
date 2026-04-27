@@ -32,24 +32,34 @@ public final class UpdateUserService implements UpdateUserUseCase {
   public UserModel execute(final UpdateUserCommand command) {
     validateCommand(command);
 
-    log.info("Actualizando usuario id=" + command.id() + ", email=" + command.email() + ", nombre=" + command.name());
+    log.info(
+        "Actualizando usuario id="
+            + command.id()
+            + ", email="
+            + command.email()
+            + ", nombre="
+            + command.name());
 
+    final UserModel userToUpdate = buildUserToUpdate(command);
+    final UserModel updatedUser = updateUser(userToUpdate);
+
+    notifyUserUpdated(updatedUser);
+
+    return updatedUser;
+  }
+
+  private UserModel buildUserToUpdate(final UpdateUserCommand command) {
     final UserId userId = new UserId(command.id());
     final UserModel currentUser = findExistingUserOrFail(userId);
     final UserEmail newEmail = new UserEmail(command.email());
 
     ensureEmailIsNotTakenByAnotherUser(newEmail, userId);
 
-    final UserModel userToUpdate =
-        UserApplicationMapper.fromUpdateCommandToModel(command, currentUser.getPassword());
-
-    return updateUserAndNotify(userToUpdate);
+    return UserApplicationMapper.fromUpdateCommandToModel(command, currentUser.getPassword());
   }
 
-  private UserModel updateUserAndNotify(final UserModel userToUpdate) {
-    final UserModel updatedUser = updateUserPort.update(userToUpdate);
-    notifyUserUpdated(updatedUser);
-    return updatedUser;
+  private UserModel updateUser(final UserModel userToUpdate) {
+    return updateUserPort.update(userToUpdate);
   }
 
   private void notifyUserUpdated(final UserModel user) {
