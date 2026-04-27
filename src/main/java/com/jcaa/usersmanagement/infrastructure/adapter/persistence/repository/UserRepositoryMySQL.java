@@ -38,7 +38,7 @@ public final class UserRepositoryMySQL
           + "VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())";
 
   private static final String SQL_UPDATE =
-      "UPDATE users SET name = ?, email = ?, password = ?, role = ?, status = ?, updated_at = NOW() "
+      "UPDATE users SET name = ?, email = ?, password = ?, role = ?, status, updated_at = NOW() "
           + "WHERE id = ?";
 
   private static final String SQL_SELECT_BY_ID =
@@ -60,31 +60,11 @@ public final class UserRepositoryMySQL
 
   private final Connection connection;
 
-  private boolean initialized = false;
-
-  public void init() {
-    this.initialized = true;
-  }
-
   @Override
   public UserModel save(final UserModel user) {
     final UserPersistenceDto dto = UserPersistenceMapper.fromModelToDto(user);
     executeSave(dto);
     return findByIdOrFail(user.getId());
-  }
-
-  public UserModel saveWithFields(
-      final String id,
-      final String name,
-      final String email,
-      final String password,
-      final String role,
-      final String status) {
-    if (id == null || name == null || email == null || password == null || role == null || status == null) {
-      throw new IllegalArgumentException("Todos los campos son obligatorios");
-    }
-
-    throw new UnsupportedOperationException("Usar save(UserModel) en su lugar.");
   }
 
   @Override
